@@ -22,16 +22,14 @@ jobs:
     - name: Create iOS project
       run: briefcase create ios --no-input
 
-    - name: Build iOS app
-      run: briefcase build ios --no-input
+    - name: Build iOS app for device
+      run: briefcase build ios -d iphoneos --no-input
 
-    - name: Pack .app to .ipa automatically
+    - name: Pack .app to .ipa
       run: |
-        # Знаходимо згенеровану пачу .app усередині build
         APP_PATH=$(find . -type d -name "*.app" | head -n 1)
         echo "Found App at: $APP_PATH"
         
-        # Створюємо потрібну для iOS структуру Payload/ і пакуємо в .ipa
         mkdir Payload
         cp -r "$APP_PATH" Payload/
         zip -r WorkTracker.ipa Payload
