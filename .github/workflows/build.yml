@@ -37,24 +37,21 @@ jobs:
           --include="project.pbxproj" || true
 
 
-    - name: Pack .app to .ipa
+    
+    - name: Find iOS App
       run: |
-        APP_PATH=$(find . -path "*/Release-iphoneos/*.app" | head -n 1)
+        echo "Searching for .app bundles..."
 
-        if [ -z "$APP_PATH" ]; then
-          APP_PATH=$(find . -type d -name "*.app" | head -n 1)
-        fi
+        find . -type d -name "*.app" -print
 
-        if [ -z "$APP_PATH" ]; then
-          echo "ERROR: App not found!"
-          exit 1
-        fi
+        echo "Searching build directories..."
 
-        echo "Packing App from: $APP_PATH"
+        find build/WorkTracker/ios -maxdepth 6 -type d -print || true
 
-        mkdir -p Payload
-        cp -r "$APP_PATH" Payload/
-        zip -r WorkTracker.ipa Payload
+        echo "Checking Xcode build products..."
+
+        find build/WorkTracker/ios -type d -name "Release-iphoneos" -print || true
+
 
     - name: Upload IPA artifact
       uses: actions/upload-artifact@v4
