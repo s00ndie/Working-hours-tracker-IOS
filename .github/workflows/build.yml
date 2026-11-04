@@ -63,12 +63,22 @@ jobs:
 
     - name: Package IPA
       run: |
-        APP_PATH="build/WorkTracker/ios/xcode/build/Release-iphoneos/Work Tracker.app"
+        find build/WorkTracker/ios/xcode \
+          -type d \
+          -name "Release-iphoneos" \
+          -print
 
-        if [ ! -d "$APP_PATH" ]; then
-          echo "iPhone app was not created!"
+        APP_PATH=$(find build/WorkTracker/ios/xcode \
+          -type d \
+          -path "*/Release-iphoneos/*.app" \
+          -print -quit)
+
+        if [ -z "$APP_PATH" ]; then
+          echo "No iPhone app found!"
           exit 1
         fi
+
+        echo "Found app: $APP_PATH"
 
         mkdir -p Payload
         cp -R "$APP_PATH" Payload/
