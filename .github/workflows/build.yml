@@ -23,37 +23,50 @@ jobs:
     - name: Create iOS project
       run: briefcase create iOS --no-input
 
-    - name: Inspect framework signing function
+    - name: Disable framework signing in CI
       run: |
-        sed -n '115,150p' \
-          build/WorkTracker/ios/xcode/Support/Python.xcframework/build/utils.sh
+        python3 - <<'PY'
+        from pathlib import Path
 
-    - name: Inspect Python framework signing
+        path = Path(
+            "build/WorkTracker/ios/xcode/Support/Python.xcframework/build/utils.sh"
+        )
+
+        content = path.read_text()
+
+        old = '''    /usr/bin/codesign --force --sign "$EXPANDED_CODE_SIGN_IDENTITY" ${OTHER_CODE_SIGN_FLAGS:-} -o runtime --timestamp=none --preserve-metadata=identifier,entitlements,flags --generate-entitlement-der "$CODESIGNING_FOLDER_PATH/$FRAMEWORK_FOLDER"'''
+
+        new = '''    if [ -n "$EXPANDED_CODE_SIGN_IDENTITY" ]; then
+        /usr/bin/codesign --force --sign "$EXPANDED_CODE_SIGN_IDENTITY" ${OTHER_CODE_SIGN_FLAGS:-} -o runtime --timestamp=none --preserve-metadata=identifier,entitlements,flags --generate-entitlement-der "$CODESIGNING_FOLDER_PATH/$FRAMEWORK_FOLDER"
+        else
+        echo "Skipping framework signing; AltServer will sign the app later."
+        fi'''
+
+        if old not in content:
+            raise SystemExit("Could not find the signing command!")
+
+        path.write_text(content.replace(old, new))
+        print("Framework signing patch applied.")
+        PY
+
+    - name: Build for physical iPhone
       run: |
-        echo "=== Signing scripts ==="
-        grep -R -n -E "Signing framework as|CODE_SIGN_IDENTITY|codesign" \
-          build/WorkTracker/ios/xcode \
-          --include="*.sh" \
-          --include="*.py" || true
-
-        echo "=== Xcode signing settings ==="
         xcodebuild \
           -project "build/WorkTracker/ios/xcode/Work Tracker.xcodeproj" \
           -scheme "Work Tracker" \
           -configuration Release \
           -sdk iphoneos \
-          -showBuildSettings | grep -E "CODE_SIGN|PRODUCT_BUNDLE_IDENTIFIER"
-
-    - name: Build iOS project
-      run: briefcase build iOS --no-input
+          -destination 'generic/platform=iOS' \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO \
+          clean build
 
     - name: Package IPA
       run: |
-        APP_PATH=$(find build/WorkTracker/ios -type d -name "*.app" | head -n 1)
+        APP_PATH="build/WorkTracker/ios/xcode/build/Release-iphoneos/Work Tracker.app"
 
-        if [ -z "$APP_PATH" ]; then
-          echo "No .app found"
-          find build/WorkTracker/ios -type d -name "*.app"
+        if [ ! -d "$APP_PATH" ]; then
+          echo "iPhone app was not created!"
           exit 1
         fi
 
