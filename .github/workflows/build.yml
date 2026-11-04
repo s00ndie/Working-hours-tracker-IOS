@@ -33,5 +33,4 @@ jobs:
       with:
         name: WorkTracker-IPA
         path: |
-          *.ipa
-          **/build/Release-iphoneos/*.ipa
+          **/*.ipa
