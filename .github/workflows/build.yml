@@ -25,18 +25,14 @@ jobs:
     - name: Build iOS app with Briefcase
       run: briefcase build ios --no-input
 
-    - name: Build IPA via Xcode command line
-      run: |
-        cd macos/ios/xcodeproj
-        xcodebuild -project WorkTracker.xcodeproj -scheme WorkTracker -configuration Release -sdk iphoneos -allowProvisioningUpdates CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+    - name: Package iOS app via Briefcase
+      run: briefcase package ios --no-input
 
-    - name: Find and show IPA path
-      run: find . -name "*.ipa" -o -name "*.app"
+    - name: Find generated IPA
+      run: find . -name "*.ipa"
 
-    - name: Upload App artifact
+    - name: Upload IPA artifact
       uses: actions/upload-artifact@v4
       with:
-        name: WorkTracker-App
-        path: |
-          macos/ios/xcodeproj/build/Release-iphoneos/**/*.ipa
-          macos/ios/xcodeproj/build/Release-iphoneos/**/*.app
+        name: WorkTracker-IPA
+        path: '**/*.ipa'
