@@ -19,7 +19,7 @@ jobs:
     - name: Install Briefcase
       run: pip install briefcase
 
-    - name: Create iOS project
+    - name: Generate iOS project
       run: briefcase create ios --no-input
 
     - name: Build iOS app
@@ -28,9 +28,11 @@ jobs:
     - name: Package iOS app (.ipa)
       run: briefcase package ios --no-input
 
+    - name: Find and show IPA path
+      run: find . -name "*.ipa"
+
     - name: Upload IPA artifact
       uses: actions/upload-artifact@v4
       with:
         name: WorkTracker-IPA
-        path: |
-          **/*.ipa
+        path: '**/build/Release-iphoneos/*.ipa'
