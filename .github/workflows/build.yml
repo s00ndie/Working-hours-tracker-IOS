@@ -21,39 +21,26 @@ jobs:
       run: pip install briefcase
 
     - name: Create iOS project
-      run: briefcase create ios --no-input
+      run: briefcase create iOS --no-input
 
-    
-    - name: Diagnose framework signing
+    - name: Build iOS project
+      run: briefcase build iOS --no-input
+
+    - name: Package IPA
       run: |
-        echo "Searching for framework signing commands..."
+        APP_PATH=$(find build/WorkTracker/ios -type d -name "*.app" | head -n 1)
 
-        grep -R -n -C 5 "Signing framework as" build/WorkTracker/ios/xcode || true
+        if [ -z "$APP_PATH" ]; then
+          echo "No .app found"
+          find build/WorkTracker/ios -type d -name "*.app"
+          exit 1
+        fi
 
-        echo "Searching for codesign commands..."
+        mkdir -p Payload
+        cp -R "$APP_PATH" Payload/
+        zip -r WorkTracker.ipa Payload
 
-        grep -R -n -C 3 "codesign" build/WorkTracker/ios/xcode \
-          --include="*.sh" \
-          --include="project.pbxproj" || true
-
-
-    
-    - name: Find iOS App
-      run: |
-        echo "Searching for .app bundles..."
-
-        find . -type d -name "*.app" -print
-
-        echo "Searching build directories..."
-
-        find build/WorkTracker/ios -maxdepth 6 -type d -print || true
-
-        echo "Checking Xcode build products..."
-
-        find build/WorkTracker/ios -type d -name "Release-iphoneos" -print || true
-
-
-    - name: Upload IPA artifact
+    - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
         name: WorkTracker-IPA
