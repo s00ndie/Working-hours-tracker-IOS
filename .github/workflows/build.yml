@@ -23,6 +23,22 @@ jobs:
     - name: Create iOS project
       run: briefcase create iOS --no-input
 
+        - name: Inspect Python framework signing
+      run: |
+        echo "=== Signing scripts ==="
+        grep -R -n -E "Signing framework as|CODE_SIGN_IDENTITY|codesign" \
+          build/WorkTracker/ios/xcode \
+          --include="*.sh" \
+          --include="*.py" || true
+
+        echo "=== Xcode signing settings ==="
+        xcodebuild \
+          -project "build/WorkTracker/ios/xcode/Work Tracker.xcodeproj" \
+          -scheme "Work Tracker" \
+          -configuration Release \
+          -sdk iphoneos \
+          -showBuildSettings | grep -E "CODE_SIGN|PRODUCT_BUNDLE_IDENTIFIER"
+
     - name: Build iOS project
       run: briefcase build iOS --no-input
 
