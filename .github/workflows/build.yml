@@ -23,18 +23,19 @@ jobs:
     - name: Create iOS project
       run: briefcase create ios --no-input
 
-    - name: Build iOS app
+    
+    - name: Diagnose framework signing
       run: |
-        XCODEPROJ=$(find . -name "*.xcodeproj" | head -n 1)
+        echo "Searching for framework signing commands..."
 
-        xcodebuild -project "$XCODEPROJ" \
-          -sdk iphoneos \
-          -configuration Release \
-          CODE_SIGN_IDENTITY="-" \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGNING_ALLOWED=YES \
-          CODE_SIGN_STYLE=Manual \
-          clean build
+        grep -R -n -C 5 "Signing framework as" build/WorkTracker/ios/xcode || true
+
+        echo "Searching for codesign commands..."
+
+        grep -R -n -C 3 "codesign" build/WorkTracker/ios/xcode \
+          --include="*.sh" \
+          --include="project.pbxproj" || true
+
 
     - name: Pack .app to .ipa
       run: |
