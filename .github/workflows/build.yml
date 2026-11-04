@@ -57,6 +57,7 @@ jobs:
           -configuration Release \
           -sdk iphoneos \
           -destination 'generic/platform=iOS' \
+          -derivedDataPath "$GITHUB_WORKSPACE/ios-build" \
           CODE_SIGNING_ALLOWED=NO \
           CODE_SIGNING_REQUIRED=NO \
           clean build
