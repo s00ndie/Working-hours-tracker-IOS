@@ -25,11 +25,8 @@ jobs:
     - name: Build iOS app
       run: briefcase build ios --no-input
 
-    - name: Show directory structure
-      run: find . -maxdepth 4
-
     - name: Archive build folder
-      run: tar -czf ios-project-build.tar.gz macos/ios/
+      run: tar -czf ios-project-build.tar.gz iOS/
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
