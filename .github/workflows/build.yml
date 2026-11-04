@@ -20,23 +20,21 @@ jobs:
       run: pip install briefcase
 
     - name: Create iOS project
-      run: briefcase create ios Xcode --no-input
+      run: briefcase create ios --no-input
 
-    - name: Build iOS app without signing enforcement
+    - name: Build and bypass framework signing in cloud
       run: |
         XCODEPROJ=$(find . -name "*.xcodeproj" | head -n 1)
-        BUILD_DIR=$(dirname "$XCODEPROJ")
-        echo "Found xcodeproj at: $XCODEPROJ"
         
-        # Збираємо проєкт, примусово вимкнувши підпис код-сайнінгу для скриптів
+        # Компілюємо під реальний пристрій (iphoneos / arm64), 
+        # але наказуємо Xcode не падати через відсутність платних сертифікатів Apple
         xcodebuild -project "$XCODEPROJ" \
                    -sdk iphoneos \
                    -configuration Release \
                    CODE_SIGN_IDENTITY="" \
                    CODE_SIGNING_REQUIRED=NO \
                    CODE_SIGNING_ALLOWED=NO \
-                   EXPANDED_CODE_SIGN_IDENTITY="" \
-                   codesign_identity="" \
+                   CODE_SIGN_STYLE="Manual" \
                    clean build
 
     - name: Pack .app to .ipa
