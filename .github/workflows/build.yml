@@ -1,3 +1,4 @@
+
 name: Build iOS App
 
 on:
@@ -22,32 +23,35 @@ jobs:
     - name: Create iOS project
       run: briefcase create ios --no-input
 
-    - name: Build and bypass framework signing in cloud
+    - name: Build iOS app
       run: |
         XCODEPROJ=$(find . -name "*.xcodeproj" | head -n 1)
-        
-        # Компілюємо під реальний пристрій (iphoneos / arm64), 
-        # але наказуємо Xcode не падати через відсутність платних сертифікатів Apple
+
         xcodebuild -project "$XCODEPROJ" \
-                   -sdk iphoneos \
-                   -configuration Release \
-                   CODE_SIGN_IDENTITY="" \
-                   CODE_SIGNING_REQUIRED=NO \
-                   CODE_SIGNING_ALLOWED=NO \
-                   CODE_SIGN_STYLE="Manual" \
-                   clean build
+          -sdk iphoneos \
+          -configuration Release \
+          CODE_SIGN_IDENTITY="-" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=YES \
+          CODE_SIGN_STYLE=Manual \
+          clean build
 
     - name: Pack .app to .ipa
       run: |
         APP_PATH=$(find . -path "*/Release-iphoneos/*.app" | head -n 1)
+
         if [ -z "$APP_PATH" ]; then
           APP_PATH=$(find . -type d -name "*.app" | head -n 1)
         fi
-        
+
+        if [ -z "$APP_PATH" ]; then
+          echo "ERROR: App not found!"
+          exit 1
+        fi
+
         echo "Packing App from: $APP_PATH"
-        
-        chmod -R +x "$APP_PATH"
-        mkdir Payload
+
+        mkdir -p Payload
         cp -r "$APP_PATH" Payload/
         zip -r WorkTracker.ipa Payload
 
