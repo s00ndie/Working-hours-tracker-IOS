@@ -19,32 +19,29 @@ jobs:
     - name: Install Briefcase
       run: pip install briefcase
 
-    - name: Create iOS project for physical device
+    - name: Create iOS project
       run: briefcase create ios Xcode --no-input
 
-    - name: Build iOS app
-      run: briefcase build ios Xcode --no-input
-
-    - name: Compile for iOS Device via xcodebuild
+    - name: Build iOS app without signing enforcement
       run: |
         XCODEPROJ=$(find . -name "*.xcodeproj" | head -n 1)
         BUILD_DIR=$(dirname "$XCODEPROJ")
         echo "Found xcodeproj at: $XCODEPROJ"
         
-        # Компільовуємо напряму під iphoneos (ARM64)
+        # Збираємо проєкт, примусово вимкнувши підпис код-сайнінгу для скриптів
         xcodebuild -project "$XCODEPROJ" \
                    -sdk iphoneos \
                    -configuration Release \
                    CODE_SIGN_IDENTITY="" \
                    CODE_SIGNING_REQUIRED=NO \
                    CODE_SIGNING_ALLOWED=NO \
+                   EXPANDED_CODE_SIGN_IDENTITY="" \
+                   codesign_identity="" \
                    clean build
 
     - name: Pack .app to .ipa
       run: |
-        # Знаходимо скомпільований бінарник для реального пристрою (Release-iphoneos)
         APP_PATH=$(find . -path "*/Release-iphoneos/*.app" | head -n 1)
-        
         if [ -z "$APP_PATH" ]; then
           APP_PATH=$(find . -type d -name "*.app" | head -n 1)
         fi
