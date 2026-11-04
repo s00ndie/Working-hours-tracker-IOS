@@ -25,11 +25,19 @@ jobs:
     - name: Build iOS app
       run: briefcase build ios --no-input
 
-    - name: Archive build folder
-      run: tar -czf ios-project-build.tar.gz iOS/
-
-    - name: Upload Build Artifact
+    - name: Pack .app to .ipa automatically
+      run: |
+        # Знаходимо згенеровану пачу .app усередині build
+        APP_PATH=$(find . -type d -name "*.app" | head -n 1)
+        echo "Found App at: $APP_PATH"
+        
+        # Створюємо потрібну для iOS структуру Payload/ і пакуємо в .ipa
+        mkdir Payload
+        cp -r "$APP_PATH" Payload/
+        zip -r WorkTracker.ipa Payload
+        
+    - name: Upload IPA artifact
       uses: actions/upload-artifact@v4
       with:
-        name: iOS-Source-Build
-        path: ios-project-build.tar.gz
+        name: WorkTracker-IPA
+        path: WorkTracker.ipa
