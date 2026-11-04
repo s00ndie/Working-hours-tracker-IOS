@@ -125,7 +125,7 @@ if __name__ == '__main__':
   for rec in tracker.get_all_records():
     print(
         f"Datum: {rec['date']} | {rec['start_time']} - {rec['end_time']}"
-        f" | Gewerkt: {rec['total_hours']} uuren"
+        f" | Gewerkt: {rec['total_hours']} uren"
     )
 
   # Виведемо статистику за місяць
