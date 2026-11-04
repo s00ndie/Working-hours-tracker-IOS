@@ -23,7 +23,7 @@ jobs:
     - name: Create iOS project
       run: briefcase create iOS --no-input
 
-        - name: Inspect Python framework signing
+    - name: Inspect Python framework signing
       run: |
         echo "=== Signing scripts ==="
         grep -R -n -E "Signing framework as|CODE_SIGN_IDENTITY|codesign" \
