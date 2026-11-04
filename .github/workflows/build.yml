@@ -22,17 +22,17 @@ jobs:
     - name: Create iOS project
       run: briefcase create ios --no-input
 
-    - name: Build iOS app with Briefcase
+    - name: Build iOS app
       run: briefcase build ios --no-input
 
-    - name: Package iOS app via Briefcase
-      run: briefcase package ios --no-input
+    - name: Show directory structure
+      run: find . -maxdepth 4
 
-    - name: Find generated IPA
-      run: find . -name "*.ipa"
+    - name: Archive build folder
+      run: tar -czf ios-project-build.tar.gz macos/ios/
 
-    - name: Upload IPA artifact
+    - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: WorkTracker-IPA
-        path: '**/*.ipa'
+        name: iOS-Source-Build
+        path: ios-project-build.tar.gz
