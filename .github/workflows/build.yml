@@ -62,20 +62,19 @@ jobs:
           CODE_SIGNING_REQUIRED=NO \
           clean build
 
+    
     - name: Package IPA
       run: |
-        find build/WorkTracker/ios/xcode \
-          -type d \
-          -name "Release-iphoneos" \
-          -print
+        echo "Searching for iPhone app..."
 
-        APP_PATH=$(find build/WorkTracker/ios/xcode \
+        APP_PATH=$(find "$GITHUB_WORKSPACE/ios-build" \
           -type d \
           -path "*/Release-iphoneos/*.app" \
           -print -quit)
 
         if [ -z "$APP_PATH" ]; then
           echo "No iPhone app found!"
+          find "$GITHUB_WORKSPACE/ios-build" -type d -name "*.app"
           exit 1
         fi
 
@@ -85,6 +84,7 @@ jobs:
         cp -R "$APP_PATH" Payload/
         zip -r WorkTracker.ipa Payload
 
+        
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
