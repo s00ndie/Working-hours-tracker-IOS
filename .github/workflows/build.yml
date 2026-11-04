@@ -23,6 +23,11 @@ jobs:
     - name: Create iOS project
       run: briefcase create iOS --no-input
 
+    - name: Inspect framework signing function
+      run: |
+        sed -n '115,150p' \
+          build/WorkTracker/ios/xcode/Support/Python.xcframework/build/utils.sh
+
     - name: Inspect Python framework signing
       run: |
         echo "=== Signing scripts ==="
